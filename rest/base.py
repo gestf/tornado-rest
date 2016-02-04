@@ -22,6 +22,9 @@ from rest.meta import match_rule
 
 
 class ParamException(Exception):
+    """
+    param exception.
+    """
     code = E_PARAM
     msg = None
 
@@ -46,11 +49,14 @@ def route(**rule):
 
 class BaseHandler(tornado.web.RequestHandler):
     """
-    基础功能封装
+    base request handler, responsible for dispatch request function.
     """
     ARG_DEFAULT = object()
 
     def render_error_html(self):
+        """
+        generate error html page.
+        """
         if ALARM_EMAIL_OPEN:
             context = get_debug_context()
             if context:
@@ -60,6 +66,11 @@ class BaseHandler(tornado.web.RequestHandler):
         return ""
 
     def alarm_exception(self, html, error=None):
+        """
+        responsible for send alarm html email.
+        :param html: html page string,
+        :param error: error info.
+        """
         if ALARM_EMAIL_OPEN and html:
             logging.error("send error report mail")
             mail = Mail("smtp.qq.com", ALARM_EMAIL_SEND_NAME, ALARM_EMAIL_SEND_PWD)
@@ -73,16 +84,10 @@ class BaseHandler(tornado.web.RequestHandler):
 
     def send_result(self, code, result=None, msg=None):
         """
-        发送json数据
+        send json standard result data.
         :param code: return code
         :param result: return result
         :param msg: return message
-        :return: dict data:
-        {
-            "code":"状态码",
-            "msg":"错误信息",
-            "result":"数据内容"
-        }
         """
         response = {
             "code": code,
@@ -92,12 +97,13 @@ class BaseHandler(tornado.web.RequestHandler):
         if options.debug:
             logging.info("request: %s", self.request.arguments or self.request.body)
             logging.info("response: %s", json.dumps(response, default=json_default))
+
         self.finish(response)
 
     def get_argument(self, name, default=tornado.web.RequestHandler._ARG_DEFAULT,
                      strip=True):
         """
-        重写以把unicode的参数都进行utf-8编码
+        get string argument.
         """
         value = super(BaseHandler, self).get_argument(name, default, strip)
         if isinstance(value, unicode):
@@ -106,10 +112,9 @@ class BaseHandler(tornado.web.RequestHandler):
 
     def get_argument_int(self, name, default=ARG_DEFAULT):
         """
-        获取整型参数
-        :param name: 参数名
-        :param default: 如果未传此参数时得到的默认值
-        :return: 返回得到的整型值
+        get int argument.
+        :param name: param name
+        :param default: default value
         """
         value = self.get_argument(name, default)
         if value == self.ARG_DEFAULT:
@@ -126,10 +131,9 @@ class BaseHandler(tornado.web.RequestHandler):
 
     def get_argument_float(self, name, default=ARG_DEFAULT):
         """
-        获取浮点型参数
-        :param name: 参数名
-        :param default: 如果未传此参数时得到的默认值
-        :return: 返回得到的浮点型值
+        get float argument.
+        :param name: param name
+        :param default: default value
         """
         value = self.get_argument(name, default)
         if value == self.ARG_DEFAULT:
@@ -146,7 +150,7 @@ class BaseHandler(tornado.web.RequestHandler):
 
     def get_json_data(self):
         """
-        获取body参数字典
+        get request body json data.
         """
         json_body = getattr(self.request, '__json_body', None)
         if json_body is None:
@@ -156,10 +160,9 @@ class BaseHandler(tornado.web.RequestHandler):
 
     def get_json_argument(self, name, default=None):
         """
-        获取body参数
-        :param name: 参数名
-        :param default: 如果未传此参数时得到的默认值
-        :return: 返回得到的值
+        get request body argument.
+        :param name: param name
+        :param default: default value
         """
         json_body = self.get_json_data()
         return json_body.get(name, default)
@@ -196,38 +199,39 @@ class BaseHandler(tornado.web.RequestHandler):
 
     def get(self, *module, **kwargs):
         """
-        HTTP GET处理
+        HTTP GET
         """
         self.process_module(*module, **kwargs)
 
     def post(self, *module, **kwargs):
         """
-        HTTP POST处理
-        """
-        # 文件上传不记录POST日志
-        if not self.request.files:
-            write2log(LOG_HOME, "post_request", self.request.uri, self.request.body)
-        self.process_module(*module, **kwargs)
-
-    def delete(self, *module, **kwargs):
-        """
-        HTTP DELETE处理
+        HTTP POST
         """
         self.process_module(*module, **kwargs)
 
     def put(self, *module, **kwargs):
         """
-        HTTP PUT处理
+        HTTP PUT
         """
-        # 文件上传不记录POST日志
-        if not self.request.files:
-            write2log(LOG_HOME, "put_request", self.request.uri, self.request.body)
+        self.process_module(*module, **kwargs)
+
+    def delete(self, *module, **kwargs):
+        """
+        HTTP DELETE
+        """
         self.process_module(*module, **kwargs)
 
 
 class RestHandler(BaseHandler):
+    """
+    rest request handler, responsible for common resource handle.
+    """
     @route(method="GET", module="default")
     def get_resource(self, resource_id=None):
+        """
+        get resource single data or list data.
+        :param resource_id: resource id
+        """
         try:
             code, result = E_SUCC, {}
             if resource_id:
@@ -246,6 +250,9 @@ class RestHandler(BaseHandler):
 
     @route(method="POST", module="default")
     def save_resource(self):
+        """
+        save resource data
+        """
         data = self.get_json_data()
         print data
         try:
@@ -256,6 +263,10 @@ class RestHandler(BaseHandler):
 
     @route(method="PUT", module="default")
     def update_resource(self, resource_id):
+        """
+        update resource data
+        :param resource_id: resource id
+        """
         data = self.get_json_data()
         print data
         try:
@@ -273,6 +284,10 @@ class RestHandler(BaseHandler):
 
     @route(method="DELETE", module="default")
     def delete_resource(self, resource_id):
+        """
+        delete resource data
+        :param resource_id: resource id
+        """
         try:
             code, result = E_SUCC, {}
             model = self.model_engine.get_model_by_id(resource_id)

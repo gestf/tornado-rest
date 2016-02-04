@@ -10,6 +10,10 @@ support_actions = set(("get", "list", "post", "put", "delete"))
 
 
 def routes(route_list):
+    """
+    settle route and handler mapping tuple.
+    :param route_list: route handler list
+    """
     routes = []
     for route in route_list:
         if isinstance(route, list):
@@ -20,6 +24,10 @@ def routes(route_list):
 
 
 def get_available_actions(**kwargs):
+    """
+    get available actions, filter enable request method.
+    :param kwargs: extend params.
+    """
     action = set(kwargs.get("action", []))
     exclude = set(kwargs.get("exclude", []))
     if not action:
@@ -29,6 +37,13 @@ def get_available_actions(**kwargs):
 
 
 def rest_routes(model, handler=RestHandler, **kwargs):
+    """
+    route rest handle.
+    :param model: resource model
+    :param handler: resource handler
+    :param kwargs: action exclude
+    :return: route handler tuple
+    """
     prefix = kwargs.get("prefix", model.__name__.lower())
     dynamic_attr = {}
     try:

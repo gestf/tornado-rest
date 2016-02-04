@@ -50,6 +50,7 @@ def rest_routes(model, handler=RestHandler, **kwargs):
         engine = import_module(settings.MODEL_ENGINE)
     except AttributeError:
         raise Exception("settings missing MODEL_ENGINE config")
+
     dynamic_attr["model_class"] = model
     dynamic_attr["model_engine"] = engine.ModelEngine(model)
     handler = RestMetaclass(handler.__name__, handler.__bases__,

@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+import gsdb
 import datetime
+from utility.lock import cache_lock
+from utility.util import sign_data
 from lib.date import strftime
 from bson.objectid import ObjectId
 from mongoengine.document import Document
@@ -47,25 +49,32 @@ class ModelEngine(DataManager):
         """
         save model.
         """
-        model = self.model(**data)
-        model.save()
-        return model
+        with cache_lock("save_model_%s" % sign_data(data)):
+            with gsdb.switch_rp("PRIMARY"):
+                model = self.model(**data)
+                model.save()
+
+                return model
 
     def update_model(self, model, data):
         """
         update model.
         """
-        for key, value in data.items():
-            if key == "id":
-                continue
-            if hasattr(model, key):
-                setattr(model, key, value)
+        with cache_lock("update_model_%s" % str(model.id)):
+            with gsdb.switch_rp("PRIMARY"):
+                for key, value in data.items():
+                    if key == "id":
+                        continue
+                    if hasattr(model, key):
+                        setattr(model, key, value)
 
-        model.save()
-        return model
+                model.save()
+                return model
 
     def delete_model(self, model):
         """
         delete model.
         """
-        model.delete()
+        with cache_lock("delete_model_%s" % str(model.id)):
+            with gsdb.switch_rp("PRIMARY"):
+                model.delete()

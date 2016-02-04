@@ -4,6 +4,9 @@
 基础配置
 """
 import socket
+from tornado.options import define, options
+
+DEBUG = options.debug
 
 MODEL_ENGINE = "rest.backends.mongo"
 
@@ -18,7 +21,6 @@ ALARM_EMAIL_SEND_PWD = ""
 ALARM_EMAIL_CONSIGNEE = []
 
 # 开发、测试、灰度、生产
-from tornado.options import define, options
 if not hasattr(options, "runmode"):
     define("runmode", default="dev", help="dev gray prod")
     define("debug", default=True, help="enable debug")

@@ -18,7 +18,7 @@ from conf.settings import (LOG_HOME, HOSTNAME, ALARM_EMAIL_OPEN,
                            ALARM_EMAIL_CONSIGNEE)
 from conf.status_code import (ERR_DESC, E_SUCC, E_INTER, E_PARAM,
                               E_FORBIDDEN, E_RESOURCE_NOT_FIND)
-from rest.meta import match_rule, RestMetaclass
+from rest.meta import match_rule
 
 
 class ParamException(Exception):
@@ -173,10 +173,10 @@ class BaseHandler(tornado.web.RequestHandler):
         module = module[0] if module else "default"
         module = '__'.join([i for i in module.split('/') if i])
         self.request.module = module
-        for (func, rule_list) in self._route_rules:
+        for (route_func, rule_list) in self._route_rules:
             if match_rule(self.request, rule_list):
                 try:
-                    func(self, **kwargs)
+                    route_func(self, **kwargs)
                 except ParamException as ex:
                     logging.error("%s\n%s\n", self.request, str(ex), exc_info=True)
                     return self.send_result(E_PARAM, msg=ex.msg)

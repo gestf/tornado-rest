@@ -179,7 +179,7 @@ class BaseHandler(tornado.web.RequestHandler):
         for (route_func, rule_list) in self._route_rules:
             if match_rule(self.request, rule_list):
                 try:
-                    route_func(self, **kwargs)
+                    return route_func(self, **kwargs)
                 except ParamException as ex:
                     logging.error("%s\n%s\n", self.request, str(ex), exc_info=True)
                     return self.send_result(E_PARAM, msg=ex.msg)
@@ -190,8 +190,7 @@ class BaseHandler(tornado.web.RequestHandler):
                         message = "missing or surplus params"
                     logging.error("%s\n%s\n", self.request, message, exc_info=True)
                     self.send_result(E_INTER, msg=message)
-                    self.alarm_exception(html, error=ex)
-                    return
+                    return self.alarm_exception(html, error=ex)
         else:
             if hasattr(self, "_default_item"):
                 return self._default_item(**kwargs)

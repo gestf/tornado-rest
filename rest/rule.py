@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-rest meta class function
+define handler pattern rule.
 """
 import functools
 

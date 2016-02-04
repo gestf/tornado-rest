@@ -3,7 +3,7 @@
 
 import conf.settings as settings
 from rest.base import RestHandler
-from rest.meta import RestMetaclass
+from rest.rule import RestMetaclass
 from importlib import import_module
 
 support_actions = set(("get", "list", "post", "put", "delete"))

@@ -6,7 +6,7 @@ Handler基类
 import json
 import logging
 import tornado.web
-from rest.meta import route, match_rule
+from rest.rule import route, match_rule
 from tornado.options import options
 from utility.debug import get_debug_context
 from utility.mail import send_to

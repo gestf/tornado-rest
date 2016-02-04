@@ -53,12 +53,13 @@ class RestMetaclass(type):
         cls._route_rules = []
         for name in dir(cls):
             item = getattr(cls, name)
-            if hasattr(item, "_route_rule"):
-                if item._route_rule.get("default"):
-                    cls._default_item = item
-                else:
-                    rule_list = parse_rule_list(item._route_rule)
-                    if rule_list:
-                        cls._route_rules.append((item, rule_list))
+            if not (hasattr(item, "_route_rule") and item._route_rule):
+                continue
+
+            if item._route_rule.get("default"):
+                cls._default_item = item
+            else:
+                rule_list = parse_rule_list(item._route_rule)
+                cls._route_rules.append((item, rule_list))
 
         return super(RestMetaclass, cls).__init__(name, bases, attrs)

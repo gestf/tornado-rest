@@ -49,7 +49,6 @@ class BaseHandler(tornado.web.RequestHandler):
     基础功能封装
     """
     ARG_DEFAULT = object()
-    __metaclass__ = RestMetaclass
 
     def render_error_html(self):
         if ALARM_EMAIL_OPEN:
@@ -180,7 +179,7 @@ class BaseHandler(tornado.web.RequestHandler):
                     func(self, **kwargs)
                 except ParamException as ex:
                     logging.error("%s\n%s\n", self.request, str(ex), exc_info=True)
-                    self.send_result(E_PARAM, msg=ex.msg)
+                    return self.send_result(E_PARAM, msg=ex.msg)
                 except Exception as ex:
                     message = str(ex)
                     html = self.render_error_html()
@@ -189,7 +188,6 @@ class BaseHandler(tornado.web.RequestHandler):
                     logging.error("%s\n%s\n", self.request, message, exc_info=True)
                     self.send_result(E_INTER, msg=message)
                     self.alarm_exception(html, error=ex)
-                else:
                     return
         else:
             if hasattr(self, "_default_item"):

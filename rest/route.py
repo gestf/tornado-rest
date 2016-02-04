@@ -3,6 +3,7 @@
 
 import conf.settings as settings
 from rest.base import RestHandler
+from rest.meta import RestMetaclass
 from importlib import import_module
 
 support_actions = set(("get", "list", "post", "put", "delete"))
@@ -27,28 +28,30 @@ def get_available_actions(**kwargs):
     return action - exclude
 
 
-def rest_routes(model, handler=None, **kwargs):
+def rest_routes(model, handler=RestHandler, **kwargs):
     prefix = kwargs.get("prefix", model.__name__.lower())
-    handler = handler or RestHandler
+    dynamic_attr = {}
     try:
         engine = import_module(settings.MODEL_ENGINE)
-        handler["model_engine"] = engine.ModelEngine(model)
     except AttributeError:
-        from rest.backends.mongo import ModelEngine
-        handler["model_engine"] = ModelEngine
+        raise Exception("settings missing MODEL_ENGINE config")
+    dynamic_attr["model_class"] = model
+    dynamic_attr["model_engine"] = engine.ModelEngine(model)
+    handler = RestMetaclass(handler.__name__, handler.__bases__,
+                            dict(handler.__dict__.items() + dynamic_attr.items()))
     active_routes = get_available_actions(**kwargs)
 
-    routes = []
+    route_set = []
     if active_routes.intersection(set(["post", "list"])):
         route = (r"/api/v1/%s/?" % prefix, handler)
-        routes.append(route)
+        route_set.append(route)
 
     if active_routes.intersection(set(["get"])):
         route = (r"/api/v1/%s/([a-z_A-Z/]*)/?" % prefix, handler)
-        routes.append(route)
+        route_set.append(route)
 
     if active_routes.intersection(set(["get", "put", "delete"])):
         route = (r"/api/v1/%s/(?P<resource_id>[^\/]+)" % prefix, handler)
-        routes.append(route)
+        route_set.append(route)
 
-    return routes
+    return route_set

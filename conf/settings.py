@@ -16,8 +16,6 @@ LOG_HOME = "/data/logs"
 # 代码中异常发生时，发送邮件配置
 HOSTNAME = socket.gethostname()
 ALARM_EMAIL_OPEN = False
-ALARM_EMAIL_SEND_NAME = ""
-ALARM_EMAIL_SEND_PWD = ""
 ALARM_EMAIL_CONSIGNEE = []
 
 # 开发、测试、灰度、生产

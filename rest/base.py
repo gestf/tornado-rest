@@ -5,20 +5,15 @@ Handler基类
 """
 import json
 import logging
-import functools
-
 import tornado.web
+from rest.meta import route, match_rule
 from tornado.options import options
-
-from lib.debug import get_debug_context
-from lib.mail import Mail
-from lib.utils import json_default, write2log
-from conf.settings import (LOG_HOME, HOSTNAME, ALARM_EMAIL_OPEN,
-                           ALARM_EMAIL_SEND_NAME, ALARM_EMAIL_SEND_PWD,
-                           ALARM_EMAIL_CONSIGNEE)
-from conf.status_code import (ERR_DESC, E_SUCC, E_INTER, E_PARAM,
-                              E_FORBIDDEN, E_RESOURCE_NOT_FIND)
-from rest.meta import match_rule
+from utility.debug import get_debug_context
+from utility.mail import send_to
+from utility.utils import json_default
+from conf.settings import (HOSTNAME, ALARM_EMAIL_OPEN, ALARM_EMAIL_CONSIGNEE)
+from conf.status_code import (ERR_DESC, E_SUCC, E_INTER, E_PARAM, E_FORBIDDEN,
+                              E_RESOURCE_NOT_FIND)
 
 
 class ParamException(Exception):
@@ -31,20 +26,6 @@ class ParamException(Exception):
     def __init__(self, msg, *args, **kwargs):
         super(ParamException, self).__init__(*args, **kwargs)
         self.msg = msg
-
-
-def route(**rule):
-    """
-    Decorator indicating the routes for current view.
-    """
-    def entangle(func):
-        @functools.wraps(func)
-        def wrapper(self, *sub, **kw):
-            ret = func(self, *sub, **kw)
-            return ret
-        wrapper._route_rule = rule
-        return wrapper
-    return entangle
 
 
 class BaseHandler(tornado.web.RequestHandler):
@@ -73,14 +54,8 @@ class BaseHandler(tornado.web.RequestHandler):
         """
         if ALARM_EMAIL_OPEN and html:
             logging.error("send error report mail")
-            mail = Mail("smtp.qq.com", ALARM_EMAIL_SEND_NAME, ALARM_EMAIL_SEND_PWD)
             subject = HOSTNAME + ": " + repr(error) if error else "代码异常"
-            mail.send(subject,
-                      html,
-                      ALARM_EMAIL_CONSIGNEE,
-                      plugins=[{"subject": "%s.html" % (error.__class__.__name__
-                                                        if error else "error"),
-                                "content": html}])
+            send_to(subject, ALARM_EMAIL_CONSIGNEE, html)
 
     def send_result(self, code, result=None, msg=None):
         """

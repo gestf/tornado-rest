@@ -3,6 +3,21 @@
 """
 rest meta class function
 """
+import functools
+
+
+def route(**rule):
+    """
+    Decorator indicating the routes for current view.
+    """
+    def entangle(func):
+        @functools.wraps(func)
+        def wrapper(self, *sub, **kw):
+            ret = func(self, *sub, **kw)
+            return ret
+        wrapper._route_rule = rule
+        return wrapper
+    return entangle
 
 
 def parse_rule_list(rule):

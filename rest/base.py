@@ -233,14 +233,14 @@ class RestHandler(BaseHandler):
         try:
             code, result = E_SUCC, {}
             if resource_id:
-                model = self.data_manager.get_model_by_id(resource_id)
+                model = self.model_engine.get_model_by_id(resource_id)
                 if model:
-                    result = self.data_manager.get_dict(model)
+                    result = self.model_engine.get_dict(model)
                 else:
                     code = E_RESOURCE_NOT_FIND
             else:
-                model_list = self.data_manager.get_model_list()
-                result = [self.data_manager.get_dict(i) for i in model_list]
+                model_list = self.model_engine.get_model_list()
+                result = [self.model_engine.get_dict(i) for i in model_list]
 
             self.send_result(code, result)
         except Exception as ex:
@@ -251,8 +251,8 @@ class RestHandler(BaseHandler):
         data = self.get_json_data()
         print data
         try:
-            model = self.data_manager.save_model(data)
-            self.send_result(E_SUCC, self.data_manager.get_dict(model))
+            model = self.model_engine.save_model(data)
+            self.send_result(E_SUCC, self.model_engine.get_dict(model))
         except Exception as ex:
             self.send_result(E_PARAM, msg=str(ex))
 
@@ -262,10 +262,10 @@ class RestHandler(BaseHandler):
         print data
         try:
             code, resource = E_SUCC, {}
-            model = self.data_manager.get_model_by_id(resource_id)
+            model = self.model_engine.get_model_by_id(resource_id)
             if model:
-                model = self.data_manager.update_model(model, data)
-                resource = self.data_manager.get_dict(model)
+                model = self.model_engine.update_model(model, data)
+                resource = self.model_engine.get_dict(model)
             else:
                 code = E_RESOURCE_NOT_FIND
 
@@ -277,9 +277,9 @@ class RestHandler(BaseHandler):
     def delete_resource(self, resource_id):
         try:
             code, result = E_SUCC, {}
-            model = self.data_manager.get_model_by_id(resource_id)
+            model = self.model_engine.get_model_by_id(resource_id)
             if model:
-                self.data_manager.delete_model(model)
+                self.model_engine.delete_model(model)
                 result = {"resource_id": resource_id}
             else:
                 code = E_RESOURCE_NOT_FIND

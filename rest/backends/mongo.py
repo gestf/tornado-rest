@@ -8,7 +8,7 @@ from mongoengine.document import Document
 from rest.backends.base import DataManager
 
 
-class MongoEngineDataManager(DataManager):
+class ModelEngine(DataManager):
     def get_dict(self, resource):
         """
         get model json dict.

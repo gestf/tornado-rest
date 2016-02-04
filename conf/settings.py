@@ -5,6 +5,8 @@
 """
 import socket
 
+MODEL_ENGINE = "rest.backends.mongo"
+
 # 日志主目录
 LOG_HOME = "/data/logs"
 

@@ -4,7 +4,7 @@
 用户资料API处理器
 """
 from conf.status_code import E_SUCC
-from handler.base import route, RestHandler
+from rest.base import route, RestHandler
 
 
 class ProfileHandler(RestHandler):

@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from rest.backends.engine import MongoEngineDataManager
+import conf.settings as settings
+from rest.base import RestHandler
+from importlib import import_module
 
-dynamic_classes_cache = {}
 support_actions = set(("get", "list", "post", "put", "delete"))
 
 
@@ -26,19 +27,24 @@ def get_available_actions(**kwargs):
     return action - exclude
 
 
-def rest_routes(model, handler, **kwargs):
-    handler.data_manager = MongoEngineDataManager(model)
+def rest_routes(model, handler=None, **kwargs):
     prefix = kwargs.get("prefix", model.__name__.lower())
-    routes = []
-
+    handler = handler or RestHandler
+    try:
+        engine = import_module(settings.MODEL_ENGINE)
+        handler["model_engine"] = engine.ModelEngine(model)
+    except AttributeError:
+        from rest.backends.mongo import ModelEngine
+        handler["model_engine"] = ModelEngine
     active_routes = get_available_actions(**kwargs)
 
+    routes = []
     if active_routes.intersection(set(["post", "list"])):
         route = (r"/api/v1/%s/?" % prefix, handler)
         routes.append(route)
 
-    if active_routes.intersection(set(['get'])):
-        route = (r'/api/v1/%s/([a-z_A-Z/]*)/?' % prefix, handler)
+    if active_routes.intersection(set(["get"])):
+        route = (r"/api/v1/%s/([a-z_A-Z/]*)/?" % prefix, handler)
         routes.append(route)
 
     if active_routes.intersection(set(["get", "put", "delete"])):

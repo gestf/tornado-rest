@@ -8,18 +8,18 @@ rest meta class function
 def parse_rule_list(rule):
     rule_list = []
     for k, v in rule.items():
-        if '__' in k:
-            (key, op) = k.split('__', 1)
+        if "__" in k:
+            (key, op) = k.split("__", 1)
             rule_list.append((key, op, v))
         else:
-            rule_list.append((k, '==', v))
+            rule_list.append((k, "==", v))
     return rule_list
 
 
 def match_rule(req, rule_list):
     for (k, op, v) in rule_list:
         attr = getattr(req, k, None)
-        if op == '==':
+        if op == "==":
             if attr != v:
                 break
         else:
@@ -38,8 +38,8 @@ class RestMetaclass(type):
         cls._route_rules = []
         for name in dir(cls):
             item = getattr(cls, name)
-            if hasattr(item, '_route_rule'):
-                if item._route_rule.get('default'):
+            if hasattr(item, "_route_rule"):
+                if item._route_rule.get("default"):
                     cls._default_item = item
                 else:
                     rule_list = parse_rule_list(item._route_rule)
